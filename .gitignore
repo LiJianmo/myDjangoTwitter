@@ -1,6 +1,4 @@
 *.box
-.vagrant
-Vagrantfile
 .idea
 
 # Byte-compiled / optimized / DLL files
