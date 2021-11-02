@@ -12,6 +12,14 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
 
+    def validate(self, data):
+
+        if not User.objects.filter(username=data['username'].lower()).exists():
+            raise exceptions.ValidationError({
+                'username': 'This username does not exist.'
+            })
+
+        return data
 class SignupSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=20, min_length=6)
     password = serializers.CharField(max_length=20, min_length=6)
@@ -25,6 +33,11 @@ class SignupSerializer(serializers.ModelSerializer):
         # TODO<HOMEWORK> 增加验证 username 是不是只由给定的字符集合构成
         if User.objects.filter(username=data['username'].lower()).exists():
             raise exceptions.ValidationError({
+                'username': 'This email address has been occupied.'
+            })
+        if User.objects.filter(email=data['email'].lower()).exists():
+            raise exceptions.ValidationError({
+                'email': 'This email address has been occupied.'
                 'message': 'This email address has been occupied.'
             })
         if User.objects.filter(email=data['email'].lower()).exists():
