@@ -20,7 +20,6 @@ class LoginSerializer(serializers.Serializer):
             })
 
         return data
-
 class SignupSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=20, min_length=6)
     password = serializers.CharField(max_length=20, min_length=6)
@@ -39,6 +38,11 @@ class SignupSerializer(serializers.ModelSerializer):
         if User.objects.filter(email=data['email'].lower()).exists():
             raise exceptions.ValidationError({
                 'email': 'This email address has been occupied.'
+                'message': 'This email address has been occupied.'
+            })
+        if User.objects.filter(email=data['email'].lower()).exists():
+            raise exceptions.ValidationError({
+                'message': 'This email address has been occupied.'
             })
         return data
 
