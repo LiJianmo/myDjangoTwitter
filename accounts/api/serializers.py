@@ -21,8 +21,8 @@ class LoginSerializer(serializers.Serializer):
 
         return data
 class SignupSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=20, min_length=6)
-    password = serializers.CharField(max_length=20, min_length=6)
+    username = serializers.CharField(max_length=20, min_length=5)
+    password = serializers.CharField(max_length=20, min_length=5)
     email = serializers.EmailField()
 
     class Meta:

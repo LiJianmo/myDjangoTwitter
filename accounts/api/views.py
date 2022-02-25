@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from accounts.api.serializers import (
     UserSerializer,
@@ -19,7 +20,7 @@ from django.contrib.auth import (
 
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
@@ -29,6 +30,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class AccountViewSet(viewsets.ViewSet):
 
+    permission_classes = (AllowAny,)
     #serializer_class = LoginSerializer
     serializer_class = SignupSerializer
     #use UserSerializer will give default email and username text
