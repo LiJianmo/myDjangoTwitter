@@ -40,8 +40,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
+#为了在执行migrate的时候，会去找到这个相关model文件
     'accounts',
     'tweets',
+    'friendships',
+
 ]
 
 REST_FRAMEWORK = {

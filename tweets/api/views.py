@@ -6,12 +6,14 @@ from tweets.api.serializers import TweetSerializer, TweetCreateSerializer
 from tweets.models import Tweet
 
 # Create your views here.
+#白名单 gen添加create和list，用modelviewset会权限太多了不合适，但其实不加就可以 因为是自己实现的后面
 class TweetViewSet(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin,
                    viewsets.mixins.ListModelMixin,
                    ):
-    #可有可无了 因为methods里面不用queryset
+    #可有可无了 因为methods里面不用queryset，没有get_queryset
     queryset = Tweet.objects.all()
+    #指定他的serializer，决定了创建的时候 默认的表单长什么样子
     serializer_class = TweetCreateSerializer
 
     def get_permissions(self):
