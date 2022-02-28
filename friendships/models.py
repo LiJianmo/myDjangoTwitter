@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Friendship(models.Model):
+    #粉丝
     from_user = models.ForeignKey(
         User,
         #on_delete会帮助我们在delete的时候不是真的删除而是变成null

@@ -21,5 +21,8 @@ class TweetCreateSerializer(serializers.ModelSerializer):
         #use context to store request
         user = self.context['request'].user
         content = validated_data['content']
-        tweet = Tweet.objects.create(user=user, content=content)
+        tweet = Tweet.objects.create(
+            user=user,
+            content=content,
+        )
         return tweet

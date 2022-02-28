@@ -44,6 +44,7 @@ class FriendshipViewSets(viewsets.GenericViewSet):
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def follow(self, request, pk):
         #verify if exist
+        #静默处理
         if Friendship.objects.filter(
             from_user=request.user,
             to_user=pk,

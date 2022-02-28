@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from tweets.api.serializers import TweetSerializer, TweetCreateSerializer
 from tweets.models import Tweet
+from newsfeeds.services import NewsfeedService
+
 
 # Create your views here.
 #白名单 gen添加create和list，用modelviewset会权限太多了不合适，但其实不加就可以 因为是自己实现的后面
@@ -49,4 +51,5 @@ class TweetViewSet(viewsets.GenericViewSet,
                 'errors': serializer.errors,
             }, status=400)
         tweet = serializer.save()
+        NewsfeedService.fanout_to_followers(tweet)
         return Response(TweetSerializer(tweet).data, status=201)
