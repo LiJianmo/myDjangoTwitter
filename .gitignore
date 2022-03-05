@@ -1,6 +1,6 @@
-.pycharm_helpers/
 *.box
-.idea
+.vagrant
+Vagrantfile
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -131,3 +131,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/.pycharm_helpers/
+.idea
