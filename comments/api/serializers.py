@@ -1,18 +1,35 @@
-from accounts.api.serializers import UserSerializer
+from accounts.api.serializers import UserSerializerForComment
 from comments.models import Comment
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from tweets.models import Tweet
+from likes.services import LikeService
 
 class CommentSerializer(serializers.ModelSerializer):
     #因为引用到了user 所以特殊分配一下，
     # 如果不加的话，会以user_id形式来显示，
     # 现在serializer套serializer，会把user做成新的hashmap
-    user = UserSerializer()
+    user = UserSerializerForComment()
+    has_liked = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ('id', 'tweet_id', 'user', 'content', 'created_at')
+        fields = (
+            'id',
+            'tweet_id',
+            'user',
+            'content',
+            'created_at',
+            'likes_count',
+            'has_liked',
+        )
+
+    def get_has_liked(self, obj):
+        return LikeService.has_liked(self.context['request'].user, obj)
+
+    def get_likes_count(self, obj):
+        return obj.like_set.count()
 
 class CommentSerializerForCreate(serializers.ModelSerializer):
     # 这两项必须手动添加
