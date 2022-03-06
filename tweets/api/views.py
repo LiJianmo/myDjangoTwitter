@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from tweets.api.serializers import TweetSerializer, TweetCreateSerializer, TweetSerializerWithComments
+from tweets.api.serializers import TweetSerializer, TweetCreateSerializer, TweetSerializerForDetail
 from tweets.models import Tweet
 from newsfeeds.services import NewsfeedService
 from utils.decorators import required_params
@@ -34,7 +34,12 @@ class TweetViewSet(viewsets.GenericViewSet,
             user_id = user_id).order_by('-created_at')
         #will return "list of dict" 每个list是serializer.data
         #tweets is queryset
-        serializer = TweetSerializer(tweets, many=True)
+        serializer = TweetSerializer(
+            tweets,
+            context={'request': request},
+            many=True,
+
+        )
         return Response({'tweets': serializer.data})
 
     def retrieve(self, request, *args, **kwargs):
@@ -42,7 +47,7 @@ class TweetViewSet(viewsets.GenericViewSet,
         # <HOMEWORK 2> 通过某个 query 参数 with_preview_comments 来决定是否需要带上前三条 comments
         #这里用到了get_object 所以要定义一下之前的queryset
         tweet = self.get_object()
-        return Response(TweetSerializerWithComments(tweet).data)
+        return Response(TweetSerializerForDetail(tweet, context={'request': request}).data)
 
     def create(self, request, *args, **kwargs):
         serializer = TweetCreateSerializer(
@@ -59,4 +64,6 @@ class TweetViewSet(viewsets.GenericViewSet,
             }, status=400)
         tweet = serializer.save()
         NewsfeedService.fanout_to_followers(tweet)
-        return Response(TweetSerializer(tweet).data, status=201)
+        return Response(TweetSerializer(tweet, context={'request': request}).data,
+                        status=201,
+        )

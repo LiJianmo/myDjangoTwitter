@@ -11,7 +11,11 @@ class NewsFeedViewSet(viewsets.GenericViewSet):
 
     def list(self, request):
         #NewsFeedSerializer需要的参数就是一个有关newsfeed的queryset
-        serializer = NewsFeedSerializer(self.get_queryset(), many=True)
+        serializer = NewsFeedSerializer(
+            self.get_queryset(),
+            many=True,
+            context={'request': request},
+        )
         return Response({
             'newsfeeds': serializer.data,
         }, status=status.HTTP_200_OK)
