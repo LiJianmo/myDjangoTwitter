@@ -8,7 +8,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+#the name of that decorator
 from utils.decorators import required_params
+from inbox.services import NotificationService
 
 # Create your views here.
 
@@ -18,7 +20,7 @@ class LikeViewSet(viewsets.GenericViewSet):
     serializer_class = LikeSerializerForCreate
 
     #还是之前那个装饰器,这次是必须有content_type和object_id
-    @required_params(request_attr='data', params=['content_type', 'object_id'])
+    @required_params(method='{POST}', params=['content_type', 'object_id'])
     def create(self, request, *args, **kwargs):
         serializer = LikeSerializerForCreate(
             data=request.data,
@@ -31,14 +33,17 @@ class LikeViewSet(viewsets.GenericViewSet):
                 'errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        instance = serializer.save()
+        #instance is like
+        instance, created = serializer.get_or_create()
+        if created:
+            NotificationService.send_like_notification(instance)
         return Response(
             LikeSerializer(instance).data,
             status=status.HTTP_201_CREATED,
         )
 
     @action(methods=['POST'], detail=False)
-    @required_params(request_attr='data', params=['content_type', 'object_id'])
+    @required_params(method='{POST}', params=['content_type', 'object_id'])
     def cancel(self, request, *args, **kwargs):
         serializer = LikeSerializerForCancel(
             data=request.data,
