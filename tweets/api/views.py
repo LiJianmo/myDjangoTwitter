@@ -2,9 +2,9 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from tweets.api.serializers import TweetSerializer, TweetCreateSerializer, TweetSerializerForDetail
+from tweets.api.serializers import TweetSerializer, TweetSerializerForCreate, TweetSerializerForDetail
 from tweets.models import Tweet
-from newsfeeds.services import NewsfeedService
+from newsfeeds.services import NewsFeedService
 from utils.decorators import required_params
 
 
@@ -17,7 +17,7 @@ class TweetViewSet(viewsets.GenericViewSet,
     #可有可无了 因为methods里面不用queryset，没有get_queryset
     queryset = Tweet.objects.all()
     #指定他的serializer，决定了创建的时候 默认的表单长什么样子
-    serializer_class = TweetCreateSerializer
+    serializer_class = TweetSerializerForCreate
     filterset_fields = {'user_id', }
 
 
@@ -53,10 +53,14 @@ class TweetViewSet(viewsets.GenericViewSet,
         # <HOMEWORK 2> 通过某个 query 参数 with_preview_comments 来决定是否需要带上前三条 comments
         #这里用到了get_object 所以要定义一下之前的queryset
         tweet = self.get_object()
-        return Response(TweetSerializerForDetail(tweet, context={'request': request}).data)
+        serializer = TweetSerializerForDetail(
+            tweet,
+            context={'request': request},
+        )
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        serializer = TweetCreateSerializer(
+        serializer = TweetSerializerForCreate(
             #use context to store request, when running serializer.save(),
             #the create method would be called, and we could get user info from request
             data=request.data,
@@ -69,7 +73,7 @@ class TweetViewSet(viewsets.GenericViewSet,
                 'errors': serializer.errors,
             }, status=400)
         tweet = serializer.save()
-        NewsfeedService.fanout_to_followers(tweet)
+        NewsFeedService.fanout_to_followers(tweet)
         return Response(TweetSerializer(tweet, context={'request': request}).data,
                         status=201,
         )

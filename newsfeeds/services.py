@@ -1,7 +1,7 @@
 from newsfeeds.models import NewsFeed
 from friendships.services import FriendshipService
 
-class NewsfeedService(object):
+class NewsFeedService(object):
     @classmethod
     def fanout_to_followers(cls, tweet):
         #对所有的followers 在newsfeed中create一下 传参数user和tweet
