@@ -18,6 +18,8 @@ class TweetViewSet(viewsets.GenericViewSet,
     queryset = Tweet.objects.all()
     #指定他的serializer，决定了创建的时候 默认的表单长什么样子
     serializer_class = TweetCreateSerializer
+    filterset_fields = {'user_id', }
+
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -25,13 +27,17 @@ class TweetViewSet(viewsets.GenericViewSet,
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    @required_params(request_attr='query_params', params=['user_id'])
+    @required_params(params=['user_id'])
     def list(self, request, *args, **kwargs):
         #if no user in
 
-        user_id = request.query_params['user_id']
-        tweets = Tweet.objects.filter(
-            user_id = user_id).order_by('-created_at')
+
+        queryset = self.get_queryset()
+        tweets = self.filter_queryset(queryset).order_by('-created_at')
+        #comments = self.filter_queryset(queryset).order_by('created_at')
+        # user_id = request.query_params['user_id']
+        # tweets = Tweet.objects.filter(
+        #     user_id = user_id).order_by('-created_at')
         #will return "list of dict" 每个list是serializer.data
         #tweets is queryset
         serializer = TweetSerializer(

@@ -1,25 +1,40 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers, exceptions
+from accounts.models import UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ('id', 'username',)
 
-class UserSerializerForTweet(serializers.ModelSerializer):
+class UserSerializerWithProfile(UserSerializer):
+    #user.profile.nickname
+    nickname = serializers.CharField(source='profile.nickname')
+    avatar_url = serializers.SerializerMethodField()
+
+    def get_avatar_url(selfself, object):
+        if object.profile.avatar:
+            return object.profile.avatar.url
+
+class UserSerializerForTweet(UserSerializerWithProfile):
+    pass
+
+class UserSerializerForLike(UserSerializerWithProfile):
+    pass
+
+class UserSerializerForComment(UserSerializerWithProfile):
+    pass
+
+class UserSerializerForFriendship(UserSerializerWithProfile):
+    pass
+
+class UserProfileSerializerForUpdate(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id', 'username',]
+        model = UserProfile
+        fields = ('nickname', 'avatar')
 
-class UserSerializerForLike(UserSerializerForTweet):
-    pass
 
-class UserSerializerForComment(UserSerializerForTweet):
-    pass
-
-class UserSerializerForFriendship(UserSerializerForTweet):
-    pass
 
 class LoginSerializer(serializers.Serializer):
 

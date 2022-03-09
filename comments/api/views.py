@@ -9,6 +9,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from utils.decorators import required_params
+from inbox.services import NotificationService
 
 # Create your views here.
 class CommentViewSet(viewsets.GenericViewSet):
@@ -22,6 +23,7 @@ class CommentViewSet(viewsets.GenericViewSet):
 
     #指定那些可以自动变成filter的选项,
     # 甚至还有很多更灵活的搜索方式
+    #勇于django filter backend
     filterset_fields = ('tweet_id',)
 
 
@@ -39,6 +41,9 @@ class CommentViewSet(viewsets.GenericViewSet):
         # tweet_id = request.query_params['tweet_id']
         # comments = Comment.objects.filter(tweet_id=tweet_id)
         # serializer = CommentSerializer(comments, many=True)
+        # user_id = request.query_params['user_id']
+        # tweets = Tweet.objects.filter(
+        #     user_id=user_id).order_by('-created_at')
         queryset = self.get_queryset()
         comments = self.filter_queryset(queryset).order_by('created_at')
         serializer = CommentSerializer(
@@ -70,6 +75,7 @@ class CommentViewSet(viewsets.GenericViewSet):
 
         #save 会 call serializer中create
         comment = serializer.save()
+        NotificationService.send_comment_notification(comment)
         return Response(
             CommentSerializer(comment, context={'request': request}).data,
             status=status.HTTP_201_CREATED,
