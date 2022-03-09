@@ -17,6 +17,10 @@ class UserSerializerWithProfile(UserSerializer):
         if object.profile.avatar:
             return object.profile.avatar.url
 
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'nickname', 'avatar_url')
+
 class UserSerializerForTweet(UserSerializerWithProfile):
     pass
 
