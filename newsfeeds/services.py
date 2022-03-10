@@ -11,7 +11,9 @@ class NewsFeedService(object):
             for follower in FriendshipService.get_followers(tweet.user)
         ]
 
+        #the tweet owner needs to see as well
         newsfeeds.append(NewsFeed(user=tweet.user, tweet=tweet))
+
         NewsFeed.objects.bulk_create(newsfeeds)
 
 
