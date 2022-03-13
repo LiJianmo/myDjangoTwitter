@@ -7,11 +7,18 @@ from rest_framework.exceptions import ValidationError
 from tweets.models import Tweet
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = UserSerializerForLike()
+    #user = UserSerializerForLike()
+    #user = serializers.SerializerMethodField()
+    user = UserSerializerForLike(source='cached_user')
 
     class Meta:
         model = Like
         fields = ('user', 'created_at')
+
+    # def get_user(self, object):
+    #     from accounts.services import UserService
+    #     user = UserService.get_user_through_cache(object.user_id)
+    #     return UserSerializerForLike(user).data
 
 
 class BaseLikeSerializerForCreateAndCancel(serializers.ModelSerializer):

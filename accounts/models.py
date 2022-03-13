@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save, pre_delete
+from accounts.listeners import profile_changed
+from utils.listeners import invalidate_object_cache
 
 #分开user和useprofile 好处是
 #里面使用场景不太一样，有区别
@@ -36,9 +39,12 @@ class UserProfile(models.Model):
 #也可以写一个service 里面classmethod get_profile, 但查询不同的attr 会产生多次查询
 #所以用User.profile = property(get_profile)
 def get_profile(user):
+    from accounts.services import UserService
     if hasattr(user, '_cached_user_profile'):
         return getattr(user, '_cached_user_profile')
-    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+
+    profile = UserService.get_profile_through_cache(user.id)
     # 使用 user 对象的属性进行缓存(cache)，避免多次调用同一个 user 的 profile 时
     # 重复的对数据库进行查询
     setattr(user, '_cached_user_profile', profile)
@@ -47,3 +53,11 @@ def get_profile(user):
 
 # 给 User Model 增加了一个 profile 的 property 方法用于快捷访问
 User.profile = property(get_profile)
+
+
+# hook up with listeners to invalidate cache
+pre_delete.connect(invalidate_object_cache, sender=User)
+post_save.connect(invalidate_object_cache, sender=User)
+
+pre_delete.connect(profile_changed, sender=UserProfile)
+post_save.connect(profile_changed, sender=UserProfile)

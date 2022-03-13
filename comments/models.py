@@ -4,6 +4,10 @@ from tweets.models import Tweet
 from likes.models import Like
 from django.contrib.contenttypes.models import ContentType
 
+from utils.memcached_helper import MemcachedHelper
+
+
+
 class Comment(models.Model):
     """
     这个版本中，我们先实现一个比较简单的评论
@@ -33,3 +37,9 @@ class Comment(models.Model):
             content_type=ContentType.objects.get_for_model(Comment),
             object_id=self.id,
         ).order_by('-created_at')
+
+
+    @property
+    def cached_user(self):
+        from accounts.services import UserService
+        return MemcachedHelper.get_object_through_cache(User, self.user_id)

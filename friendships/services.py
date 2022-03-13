@@ -1,5 +1,14 @@
 from friendships.models import Friendship
 from django.contrib.auth.models import User
+from django.core.cache import caches
+from django.conf import settings
+from twitter.cache import FOLLOWINGS_PATTERN
+
+
+
+cache = caches['testing'] if settings.TESTING else caches['default']
+
+
 
 class FriendshipService(object):
 
@@ -25,3 +34,30 @@ class FriendshipService(object):
             to_user=to_user,
         ).exists()
 
+    @classmethod
+    def get_following_user_id_set(cls, from_user_id):
+        # get data from mamcached , 1 get key
+        # we don't cache followers since 1.the amount is very big 2.they often update
+
+        # LRU least recently used 淘汰机制 key
+
+        key = FOLLOWINGS_PATTERN.format(user_id=from_user_id)
+        #memcached cache
+        user_id_set = cache.get(key)
+        if user_id_set is not None:
+            return user_id_set
+
+        friendships = Friendship.objects.filter(from_user_id=from_user_id)
+        user_id_set = set([
+            friendship.to_user_id
+            for friendship in friendships
+        ])
+        cache.set(key, user_id_set)
+        return user_id_set
+
+
+    @classmethod
+    def invalidate_foollowing_cache(cls, from_user_id):
+        #delete the key directly
+        key = FOLLOWINGS_PATTERN.format(user_id=from_user_id)
+        cache.delete(key)
