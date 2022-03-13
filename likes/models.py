@@ -2,6 +2,9 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from accounts.services import UserService
+
+from utils.memcached_helper import MemcachedHelper
 
 # Create your models here.
 
@@ -30,3 +33,10 @@ class Like(models.Model):
             self.object_id,
         )
 
+
+    @property
+    def cached_user(self):
+        return MemcachedHelper.get_object_through_cache(User, self.user_id)
+    #如果希望得到一些便利的时候，就写在model中，和model自身有关，不带什么参数，property属性，
+    # 如果太长，也要包进service中
+    #user = UserSerializerForLike(source='cached_user')

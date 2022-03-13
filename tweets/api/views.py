@@ -6,6 +6,7 @@ from tweets.api.serializers import TweetSerializer, TweetSerializerForCreate, Tw
 from tweets.models import Tweet
 from newsfeeds.services import NewsFeedService
 from utils.decorators import required_params
+from utils.paginations import EndlessPagination
 
 
 # Create your views here.
@@ -19,6 +20,8 @@ class TweetViewSet(viewsets.GenericViewSet,
     #指定他的serializer，决定了创建的时候 默认的表单长什么样子
     serializer_class = TweetSerializerForCreate
     filterset_fields = {'user_id', }
+
+    pagination_class = EndlessPagination
 
 
     def get_permissions(self):
@@ -40,13 +43,17 @@ class TweetViewSet(viewsets.GenericViewSet,
         #     user_id = user_id).order_by('-created_at')
         #will return "list of dict" 每个list是serializer.data
         #tweets is queryset
+
+        tweets = self.paginate_queryset(tweets)
+
+
         serializer = TweetSerializer(
             tweets,
             context={'request': request},
             many=True,
 
         )
-        return Response({'tweets': serializer.data})
+        return self.get_paginated_response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         # <HOMEWORK 1> 通过某个 query 参数 with_all_comments 来决定是否需要带上所有 comments

@@ -9,7 +9,7 @@ class CommentSerializer(serializers.ModelSerializer):
     #因为引用到了user 所以特殊分配一下，
     # 如果不加的话，会以user_id形式来显示，
     # 现在serializer套serializer，会把user做成新的hashmap
-    user = UserSerializerForComment()
+    user = UserSerializerForComment(source='cached_user')
     has_liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
 
