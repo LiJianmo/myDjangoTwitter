@@ -6,7 +6,8 @@ from likes.models import Like
 from newsfeeds.models import NewsFeed
 from rest_framework.test import APIClient
 from tweets.models import Tweet
-
+from django.core.cache import caches
+from utils.redis_client import RedisClient
 
 class TestCase(DjangoTestCase):
 
@@ -52,3 +53,11 @@ class TestCase(DjangoTestCase):
         client = APIClient()
         client.force_authenticate(user)
         return user, client
+
+    def clear_cache(self):
+
+        caches['testing'].clear()
+        RedisClient.clear()
+
+        # GateKeeper.turn_on('switch_newsfeed_to_hbase')
+        # GateKeeper.turn_on('switch_friendship_to_hbase')

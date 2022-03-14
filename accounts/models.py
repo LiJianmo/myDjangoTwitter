@@ -43,7 +43,7 @@ def get_profile(user):
     if hasattr(user, '_cached_user_profile'):
         return getattr(user, '_cached_user_profile')
 
-
+    #print("I am here!")
     profile = UserService.get_profile_through_cache(user.id)
     # 使用 user 对象的属性进行缓存(cache)，避免多次调用同一个 user 的 profile 时
     # 重复的对数据库进行查询

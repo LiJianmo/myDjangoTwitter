@@ -151,6 +151,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+
+#Amazon S3
 # 设置存储用户上传文件的 storage 用什么系统
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 TESTING = ((" ".join(sys.argv)).find('manage.py test') != -1)
@@ -181,7 +183,7 @@ except:
 
 
 
-
+#Memcached
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
@@ -201,3 +203,14 @@ CACHES = {
     #     'KEY_PREFIX': 'rl',
     # },
 }
+
+
+
+# Redis
+# 安装方法: sudo apt-get install redis
+# 然后安装 redis 的 python 客户端： pip install redis
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_DB = 0 if TESTING else 1
+REDIS_KEY_EXPIRE_TIME = 7 * 86400  # in seconds
+REDIS_LIST_LENGTH_LIMIT = 1000 if not TESTING else 20

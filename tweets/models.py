@@ -40,6 +40,11 @@ class Tweet(models.Model):
             object_id=self.id,
         ).order_by('-created_at')
 
+    @property
+    def cached_user(self):
+        from accounts.services import UserService
+        return MemcachedHelper.get_object_through_cache(User, self.user_id)
+
 
 
 
