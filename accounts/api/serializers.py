@@ -16,6 +16,7 @@ class UserSerializerWithProfile(UserSerializer):
     def get_avatar_url(selfself, object):
         if object.profile.avatar:
             return object.profile.avatar.url
+        return None
 
     class Meta:
         model = User
