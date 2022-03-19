@@ -11,7 +11,7 @@ from utils.memcached_helper import MemcachedHelper
 
 # Create your models here.
 class Friendship(models.Model):
-    #粉丝
+    #博主，我自己关注的人
     from_user = models.ForeignKey(
         User,
         #on_delete会帮助我们在delete的时候不是真的删除而是变成null
@@ -19,7 +19,7 @@ class Friendship(models.Model):
         null=True,
         related_name="following_friendship_set",
     )
-
+    #关注我的粉丝
     to_user = models.ForeignKey(
         User,
         # on_delete会帮助我们在delete的时候不是真的删除而是变成null
@@ -32,9 +32,9 @@ class Friendship(models.Model):
 
     class Meta:
         index_together=(
-            #get all following users of curr user
+            #get all following users of curr user, 获取我关注的所有人
             ('from_user_id', 'created_at'),
-            #get all users I followed
+            #get all users I followed， 获取关注我的所有人
             ('to_user_id', 'created_at'),
         )
 
