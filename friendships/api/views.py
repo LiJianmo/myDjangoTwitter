@@ -34,6 +34,14 @@ class FriendshipViewSet(viewsets.GenericViewSet):
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     def followings(self, request, pk):
         friendships = Friendship.objects.filter(from_user_id=pk).order_by('-created_at')
+
+        # Friendship.objects.filter(from_user_id=pk).prefetch_related('to_user')
+        # select * from friendships_table where from_user_id=123
+        # [4, 5, 6, 7]
+        # select * from user_table where id in (4, 5, 6, 7)
+        # prefetch会帮忙组织所有user info，塞进queryset产生每一个object中
+        # 后面serialize的时候会先去看有没有，有就不产生新查询
+
         page = self.paginate_queryset(friendships)
         serializer = FollowingSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)

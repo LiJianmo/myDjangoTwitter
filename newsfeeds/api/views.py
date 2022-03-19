@@ -5,6 +5,7 @@ from newsfeeds.api.serializers import NewsFeedSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from utils.paginations import EndlessPagination
+from newsfeeds.services import NewsFeedService
 
 # Create your views here.
 class NewsFeedViewSet(viewsets.GenericViewSet):
@@ -14,8 +15,11 @@ class NewsFeedViewSet(viewsets.GenericViewSet):
 
     def list(self, request):
         #NewsFeedSerializer需要的参数就是一个有关newsfeed的queryset
-        query = NewsFeed.objects.filter(user=self.request.user)
-        page = self.paginate_queryset(query)
+        # query = NewsFeed.objects.filter(user=self.request.user)
+
+        queryset = NewsFeedService.get_cached_newsfeeds(request.user.id)
+
+        page = self.paginate_queryset(queryset)
 
         #或者這麽寫
         #queryset = self.paginate_queryset(self.get_queryset())
@@ -27,5 +31,5 @@ class NewsFeedViewSet(viewsets.GenericViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-    def get_queryset(self):
-        return NewsFeed.objects.filter(user=self.request.user)
+    # def get_queryset(self):
+    #     return NewsFeed.objects.filter(user=self.request.user)

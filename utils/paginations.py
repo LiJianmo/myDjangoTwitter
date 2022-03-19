@@ -12,14 +12,18 @@ class EndlessPagination(BasePagination):
 
     def to_html(self):
         pass
-
+        # 用reverse_ordered_list因为按照created_at 进行倒序的
     def paginate_ordered_list(self, reverse_ordered_list, request):
+
+        #删除的话就是外面讨一个while，去找一下看看有没有tweets被标记删除，如果有就去掉
+
+
         if 'created_at__gt' in request.query_params:
             # 兼容 iso 格式和 int 格式的时间戳
             try:
                 created_at__gt = int(request.query_params['created_at__gt'])
             except ValueError:
-
+            #解析把string解析成为date date格式
                 created_at__gt = parser.isoparse(request.query_params['created_at__gt'])
             objects = []
             for obj in reverse_ordered_list:
@@ -48,7 +52,14 @@ class EndlessPagination(BasePagination):
         self.has_next_page = len(reverse_ordered_list) > index + self.page_size
         return reverse_ordered_list[index: index + self.page_size]
 
+
+
     def paginate_queryset(self, queryset, request, view=None):
+
+        if type(queryset) == list:
+            return self.paginate_ordered_list(queryset, request)
+
+
             # created_at__gt 用于下拉刷新的时候加载最新的内容进来
             # 为了简便起见，下拉刷新不做翻页机制，直接加载所有更新的数据
             # 因为如果数据很久没有更新的话，不会采用下拉刷新的方式进行更新，而是重新加载最新的数据

@@ -7,6 +7,7 @@ from tweets.models import Tweet
 from newsfeeds.services import NewsFeedService
 from utils.decorators import required_params
 from utils.paginations import EndlessPagination
+from tweets.services import TweetService
 
 
 # Create your views here.
@@ -33,10 +34,10 @@ class TweetViewSet(viewsets.GenericViewSet,
     @required_params(params=['user_id'])
     def list(self, request, *args, **kwargs):
         #if no user in
-
-
-        queryset = self.get_queryset()
-        tweets = self.filter_queryset(queryset).order_by('-created_at')
+        user_id = request.query_params['user_id']
+        #
+        # queryset = self.get_queryset()
+        tweets = TweetService.get_cached_tweets(user_id=user_id)
         #comments = self.filter_queryset(queryset).order_by('created_at')
         # user_id = request.query_params['user_id']
         # tweets = Tweet.objects.filter(
@@ -44,8 +45,10 @@ class TweetViewSet(viewsets.GenericViewSet,
         #will return "list of dict" 每个list是serializer.data
         #tweets is queryset
 
+        #现在tweets是一个ordered list了，对ordered list进行pagination
+        #这里用的是我们自己的endlesspagination中的paginate_queryset方法，
+        #因为之前定义了pagination_class = EndlessPagination
         tweets = self.paginate_queryset(tweets)
-
 
         serializer = TweetSerializer(
             tweets,

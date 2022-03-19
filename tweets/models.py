@@ -5,6 +5,8 @@ from likes.models import Like
 from django.contrib.contenttypes.models import ContentType
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
 
+from tweets.listeners import push_tweet_to_cache
+
 from utils.memcached_helper import MemcachedHelper
 from utils.listeners import invalidate_object_cache
 from django.db.models.signals import post_save, pre_delete
@@ -95,3 +97,9 @@ class TweetPhoto(models.Model):
 pre_delete.connect(invalidate_object_cache, sender=Tweet)
 post_save.connect(invalidate_object_cache, sender=Tweet)
 
+post_save.connect(push_tweet_to_cache, sender=Tweet)
+
+#会触发两个listeners 一个Memcached 一个Redis，
+#model中 post_save call listener中 push_tweet_to_cache，
+# push_tweet_to_cache 中 call TweetService.push_tweet_to_cache, \
+# TweetService.push_tweet_to_cache call helper中真正push的方法
