@@ -54,10 +54,38 @@ class EndlessPagination(BasePagination):
 
 
 
-    def paginate_queryset(self, queryset, request, view=None):
 
-        if type(queryset) == list:
-            return self.paginate_ordered_list(queryset, request)
+
+
+    def paginate_cached_list(self, cached_list, request):
+        paginated_list = self.paginate_ordered_list(cached_list, request)
+        # 如果是上翻页，paginated_list 里是所有的最新的数据，直接返回
+        if 'created_at__gt' in request.query_params:
+            return paginated_list
+        # 如果还有下一页，说明 cached_list 里的数据还没有取完，也直接返回
+        if self.has_next_page:
+            return paginated_list
+        # 如果 cached_list 的长度不足最大限制，说明 cached_list 里已经是所有数据了
+        if len(cached_list) < settings.REDIS_LIST_LENGTH_LIMIT:
+            return paginated_list
+        # 如果进入这里，说明可能存在在数据库里没有 load 在 cache 里的数据，需要直接去数据库查询
+        return None
+
+
+
+
+
+
+
+
+
+
+
+
+    def paginate_queryset(self, queryset, request, view=None):
+        #
+        # if type(queryset) == list:
+        #     return self.paginate_ordered_list(queryset, request)
 
 
             # created_at__gt 用于下拉刷新的时候加载最新的内容进来

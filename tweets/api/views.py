@@ -37,21 +37,28 @@ class TweetViewSet(viewsets.GenericViewSet,
         user_id = request.query_params['user_id']
         #
         # queryset = self.get_queryset()
-        tweets = TweetService.get_cached_tweets(user_id=user_id)
-        #comments = self.filter_queryset(queryset).order_by('created_at')
-        # user_id = request.query_params['user_id']
-        # tweets = Tweet.objects.filter(
-        #     user_id = user_id).order_by('-created_at')
-        #will return "list of dict" 每个list是serializer.data
-        #tweets is queryset
+        # tweets = TweetService.get_cached_tweets(user_id=user_id)
+        # #comments = self.filter_queryset(queryset).order_by('created_at')
+        # # user_id = request.query_params['user_id']
+        # # tweets = Tweet.objects.filter(
+        # #     user_id = user_id).order_by('-created_at')
+        # #will return "list of dict" 每个list是serializer.data
+        # #tweets is queryset
+        #
+        # #现在tweets是一个ordered list了，对ordered list进行pagination
+        # #这里用的是我们自己的endlesspagination中的paginate_queryset方法，
+        # #因为之前定义了pagination_class = EndlessPagination
+        # tweets = self.paginate_queryset(tweets)
 
-        #现在tweets是一个ordered list了，对ordered list进行pagination
-        #这里用的是我们自己的endlesspagination中的paginate_queryset方法，
-        #因为之前定义了pagination_class = EndlessPagination
-        tweets = self.paginate_queryset(tweets)
+
+        cached_queryset = TweetService.get_cached_tweets(user_id)
+        page = self.paginator.paginate_cached_list(cached_queryset, request)
+        if page is None:
+            queryset = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
+            page = self.paginate_queryset(queryset)
 
         serializer = TweetSerializer(
-            tweets,
+            page,
             context={'request': request},
             many=True,
 

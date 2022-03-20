@@ -17,9 +17,16 @@ class NewsFeedViewSet(viewsets.GenericViewSet):
         #NewsFeedSerializer需要的参数就是一个有关newsfeed的queryset
         # query = NewsFeed.objects.filter(user=self.request.user)
 
-        queryset = NewsFeedService.get_cached_newsfeeds(request.user.id)
+        cached_queryset = NewsFeedService.get_cached_newsfeeds(request.user.id)
 
-        page = self.paginate_queryset(queryset)
+        page = self.paginator.paginate_cached_list(cached_queryset, request)
+
+        #if 不在cache中， 那我们就去DB里面寻找
+        if page is None:
+            queryset = NewsFeed.objects.filter(user=request.user)
+            page = self.paginate_queryset(queryset)
+
+
 
         #或者這麽寫
         #queryset = self.paginate_queryset(self.get_queryset())

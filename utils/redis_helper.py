@@ -8,13 +8,16 @@ from utils.redis_serializer import DjangoModelSerializer
 
 class RedisHelper:
 
+
+
+    #
     # cache miss
     @classmethod
     def _load_iobjects_to_cache(cls, key, objects):
         conn = RedisClient.get_cnonection()
         serialized_list = []
 
-        for object in objects:
+        for object in objects[:settings.REDIS_LIST_LENGTH_LIMIT]:
             serialized_data = DjangoModelSerializer.serialize(object)
             serialized_list.append(serialized_data)
 
@@ -24,7 +27,11 @@ class RedisHelper:
             conn.expire(key, settings.REDIS_KEY_EXPIRE_TIME)
 
 
-
+    #when we call load_objects, we might face 2 situations,
+    #1. cache hit. then we only need to use lrange to get all serialized data from cache.
+    #then we will deserialize data and append them into a object list
+    #finally return the list
+    #2. cache miss, we need to use "_load_iobjects_to_cache", to push miss info into cache
     @classmethod
     def load_objects(cls, key, queryset):
         conn = RedisClient.get_cnonection()
@@ -52,6 +59,8 @@ class RedisHelper:
     #push进去的时候 实际进去的是一个serialized过的object data
 
 
+    #when we create a new object, we need to use this method to call "_load_iobjects_to_cache" to push it into cache
+    #when we update a object, we need to serialize the new data info, and push back into cache
     @classmethod
     def push_objects(cls, key, object, queryset):
         conn = RedisClient.get_cnonection()
@@ -60,3 +69,5 @@ class RedisHelper:
             return
         serialized_data = DjangoModelSerializer.serialize(object)
         conn.lpush(key, serialized_data)
+        conn.ltrim(key, 0, settings.REDIS_LIST_LENGTH_LIMIT - 1)
+
